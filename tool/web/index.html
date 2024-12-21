@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.jpg">
+    <title>Random image from Xiuren</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c2c2c; /* Comfortable dark grey */
+            overflow: hidden;
+            margin: 0;
+            color: #f0f0f0;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: pointer;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .notice {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<img id="randomImage" src="" alt="Random Image">
+<div id="loading" class="loading">Loading...</div>
+<div id="notice" class="notice">
+    <b>Space</b> for a new image<br>
+    <b>Click</b> to see it in albums<br>
+    Cookies are used just to remember you've confirmed the notice.
+    <br><button onclick="hideNotice()">Got it!</button>
+</div>
+
+<script>
+    function getRandomImage() {
+        const loading = document.getElementById('loading');
+        const img = document.getElementById('randomImage');
+        
+        loading.style.display = 'block';
+        
+        fetch('random_image.php')
+            .then(response => response.json())
+            .then(data => {
+                const newImage = new Image();
+                newImage.src = data.url;
+                newImage.onload = () => {
+                    img.src = data.url;
+                    img.dataset.album = data.album;
+                    img.dataset.img = data.img;
+                    loading.style.display = 'none';
+                };
+            });
+    }
+
+    function showNotice() {
+        const notice = document.getElementById('notice');
+        if (!localStorage.getItem('visited')) {
+            notice.style.display = 'block';
+        }
+        localStorage.setItem('visited', 'true');
+    }
+
+    function hideNotice() {
+        const notice = document.getElementById('notice');
+        notice.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showNotice();
+        getRandomImage();
+        document.body.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                getRandomImage();
+            }
+        });
+        
+        document.getElementById('randomImage').addEventListener('click', () => {
+            const album = document.getElementById('randomImage').dataset.album;
+            const img = document.getElementById('randomImage').dataset.img;
+            window.location.href = `image_viewer.html?album=${album}&img=${img}`;
+        });
+    });
+</script>
+
+</body>
+</html>
