@@ -1,0 +1,14 @@
+[Unit]
+Description=Xiuren Download
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /path/to/dl.py
+User=www-data
+Group=www-data
+WorkingDirectory=/path/to/
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
