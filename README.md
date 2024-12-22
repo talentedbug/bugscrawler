@@ -1,4 +1,4 @@
-# BugBugging
+# BugsCrawler
 
 This is a collection of scripts that crawl all kinds of videos, images and text from different sites.
 
