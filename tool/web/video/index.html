@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.jpg">
+    <title>Random video from Xiuren</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c2c2c; /* Comfortable dark grey */
+            overflow: hidden;
+            margin: 0;
+            color: #f0f0f0;
+        }
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: pointer;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .notice {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<video id="randomVideo" controls></video>
+<div id="loading" class="loading">Loading...</div>
+<div id="notice" class="notice">
+    <b>Space</b> for a new video<br>
+    <b>Click</b> to see it in albums<br>
+    Cookies are used just to remember you've confirmed the notice.
+    <br><button onclick="hideNotice()">Got it!</button>
+</div>
+
+<script>
+    function getRandomVideo() {
+        const loading = document.getElementById('loading');
+        const video = document.getElementById('randomVideo');
+        
+        loading.style.display = 'block';
+        
+        fetch('random_video.php')
+            .then(response => response.json())
+            .then(data => {
+                video.src = data.url;
+                video.dataset.album = data.album;
+                video.dataset.video = data.video;
+                video.load();
+                loading.style.display = 'none';
+            });
+    }
+
+    function showNotice() {
+        const notice = document.getElementById('notice');
+        if (!localStorage.getItem('visited')) {
+            notice.style.display = 'block';
+        }
+        localStorage.setItem('visited', 'true');
+    }
+
+    function hideNotice() {
+        const notice = document.getElementById('notice');
+        notice.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        showNotice();
+        getRandomVideo();
+        document.body.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') {
+                getRandomVideo();
+            }
+        });
+        
+        document.getElementById('randomVideo').addEventListener('click', () => {
+            const album = document.getElementById('randomVideo').dataset.album;
+            const video = document.getElementById('randomVideo').dataset.video;
+            window.location.href = `video_viewer.html?album=${album}&video=${video}`;
+        });
+    });
+</script>
+
+</body>
+</html>

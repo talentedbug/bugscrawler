@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.jpg">
+    <title>Video Viewer</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #2c2c2c; /* Comfortable dark grey */
+            margin: 0;
+            color: #f0f0f0;
+            overflow: hidden;
+        }
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            cursor: pointer;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+        .notice {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+        .error, .warning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+<video id="fullVideo" controls></video>
+<div id="loading" class="loading">Loading...</div>
+<div id="notice" class="notice">
+    <b>Left</b> and <b>Right</b> to navigate in albums<br>
+    Cookies are used just to remember you've confirmed the notice.
+    <br><button onclick="hideNotice()">Got it!</button>
+</div>
+<div id="error" class="error">No more videos</div>
+<div id="warning" class="warning">No more videos</div>
+
+<script>
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+    }
+
+    function updateVideoSrc(album, video) {
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const warning = document.getElementById('warning');
+        loading.style.display = 'block';
+        error.style.display = 'none';
+        warning.style.display = 'none';
+
+        const newVideo = document.createElement('video');
+        newVideo.src = `/xiuren/video/${album}/${video}.mp4`;
+        newVideo.controls = true;
+        newVideo.onloadeddata = () => {
+            document.getElementById('fullVideo').src = newVideo.src;
+            loading.style.display = 'none';
+        };
+        newVideo.onerror = () => {
+            loading.style.display = 'none';
+            if (video < 1) {
+                warning.style.display = 'block';
+            } else {
+                error.style.display = 'block';
+            }
+        };
+    }
+
+    function showNotice() {
+        const notice = document.getElementById('notice');
+        if (!localStorage.getItem('video_viewer_visited')) {
+            notice.style.display = 'block';
+        }
+        localStorage.setItem('video_viewer_visited', 'true');
+    }
+
+    function hideNotice() {
+        const notice = document.getElementById('notice');
+        notice.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const album = getQueryParam('album');
+        const video = getQueryParam('video');
+        let videoNumber = parseInt(video);
+
+        showNotice();
+        updateVideoSrc(album, videoNumber);
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft') {
+                videoNumber = Math.max(1, videoNumber - 1); // Avoid negative video numbers
+                updateVideoSrc(album, videoNumber);
+            } else if (e.code === 'ArrowRight') {
+                videoNumber++;
+                updateVideoSrc(album, videoNumber);
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
