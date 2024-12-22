@@ -41,33 +41,25 @@ Prompt 3:
 
 Please make it sent with a common UA.
 
+Prompt 4 (the Previous API was unstable):
+
+Please refactor the code to fit this API which returns just a mp4 file, saving it the same way: https://api.dwo.cc/api/ksvideo
+
 """
 
 import requests
-import validators
 import os
-from urllib.parse import urlparse, urlunparse
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
 }
 
-def fetch_json(api_url):
-    try:
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    except requests.RequestException as e:
-        print(f"[Warning] Request error: {e}")
-        return None
+import requests
+import os
 
-def is_valid_url(url):
-    return validators.url(url)
-
-def strip_url_params(url):
-    parsed_url = urlparse(url)
-    stripped_url = urlunparse((parsed_url.scheme, parsed_url.netloc, parsed_url.path, '', '', ''))
-    return stripped_url
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36'
+}
 
 def download_file(url, directory, file_number):
     try:
@@ -86,25 +78,12 @@ def download_file(url, directory, file_number):
 
 def main(api_url, loop_times):
     for i in range(loop_times):
-        data = fetch_json(api_url)
-        if data and isinstance(data, list):
-            for item in data:
-                if item.get('code') == 200 and 'msg' in item:
-                    msg_url = item['msg'].strip()
-                    if is_valid_url(msg_url):
-                        stripped_url = strip_url_params(msg_url)
-                        if is_valid_url(stripped_url) and stripped_url.endswith('.mp4'):
-                            download_file(stripped_url, 'img', i+1)
-                        else:
-                            print("[Warning] Invalid stripped URL or not an mp4 file.")
-                    else:
-                        print("[Warning] Invalid URL in 'msg'.")
-                else:
-                    print("[Warning] Invalid data format or code not 200.")
-        else:
-            print("[Warning] Invalid JSON data.")
+        try:
+            download_file(api_url, 'img', i+1)
+        except Exception as e:
+            print(f"[Warning] Error occurred: {e}")
 
 if __name__ == "__main__":
-    api_url = "https://api.lolimi.cn/API/xjj/t.php"
-    loop_times = 10  # Define the number of times to loop
+    api_url = "https://api.dwo.cc/api/ksvideo"
+    loop_times = 1000  # Define the number of times to loop
     main(api_url, loop_times)
