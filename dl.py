@@ -110,6 +110,8 @@ def download_images(begin_num):
             f.write(response.content)
         print(f"[Info] Downloaded image {img_url} to {img_path}")
         os.system(f"jpegoptim {img_path} -m40 -q")
+        if os.popen(f"identify -format '%w' {img_path}").read() > 1000 or os.popen(f"identify -format '%h' {img_path}").read() > 1000:
+            os.system(f"convert -resize 50% {img_path} {img_path}")
         print(f"[Info] Compressed image {img_path}")
 
     # Download images with decreasing numbers
