@@ -110,9 +110,12 @@ def download_images(begin_num):
             f.write(response.content)
         print(f"[Info] Downloaded image {img_url} to {img_path}")
         os.system(f"jpegoptim {img_path} -m40 -q")
-        if os.popen(f"identify -format '%w' {img_path}").read() > 1000 or os.popen(f"identify -format '%h' {img_path}").read() > 1000:
-            os.system(f"convert -resize 50% {img_path} {img_path}")
-        print(f"[Info] Compressed image {img_path}")
+        img_width = int(os.popen(f"identify -format '%w' {img_path}").read())
+        pc = 1.0
+        while pc * img_width > 1200:
+            pc *= 0.9
+        os.system(f"convert -resize {int(pc * 100)}% {img_path} {img_path}")
+        print(f"[Info] Compressed image {img_path} with 40% color depth, resize to {int(pc * 100)}%")
 
     # Download images with decreasing numbers
     for i in range(initial_img_num - 1, 0, -1):  # adjust the range as needed
@@ -126,25 +129,18 @@ def download_images(begin_num):
         with open(img_path, 'wb') as f:
             f.write(response.content)
         print(f"[Info] Downloaded image {img_url} to {img_path}")
+        os.system(f"jpegoptim {img_path} -m40 -q")
+        img_width = int(os.popen(f"identify -format '%w' {img_path}").read())
+        pc = 1.0
+        while pc * img_width > 1200:
+            pc *= 0.9
+        os.system(f"convert -resize {int(pc * 100)}% {img_path} {img_path}")
+        print(f"[Info] Compressed image {img_path} with 40% color depth, resize to {int(pc * 100)}%")
 
 def main():
-    import sys
-    if len(sys.argv) > 1:
-        begin_num = int(sys.argv[1])
-    else:
-        max_dir_num = get_max_dir_num()
-        if max_dir_num > 13121:
-            begin_num = max_dir_num
-        else:
-            begin_num = max_dir_num
-    if begin_num == 13121:
-        print(f"[Info] Use default begin_num {begin_num}")
-    elif len(sys.argv) > 1:
-        print(f"[Info] Use argument begin_num {begin_num}")
-    else:
-        print(f"[Info] Use resuming begin_num {begin_num}")
-
-    current_max = 16466
+    begin_num = get_max_dir_num()
+    print(f"[Info] Use begin_num {begin_num}")
+    current_max = 16480
     warnings.filterwarnings("ignore")
     while begin_num <= current_max:
         print(f"[Info] Proceeding page {begin_num}")
